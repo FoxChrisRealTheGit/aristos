@@ -3,12 +3,13 @@ package decoders
 import (
 	"errors"
 	"reflect"
-)
+	)
 
 //will allow for other file formats
 const (
 	CUSTOM uint8 = iota
 	JSON
+	XML
 )
 
 
@@ -31,7 +32,9 @@ func GetConfiguration(confType uint8, obj interface{}, filename string) (err err
 		case CUSTOM:
 			err = MarshalCustomConfig(mysRValue, filename)
 		case JSON:
-			err = decodeJSONConfig(obj, filename)
+			err = DecodeJSONConfig(obj, filename)
+		case XML:
+			err = DecodeXMLConfig(obj, filename)
 		}
 		return err
 	}

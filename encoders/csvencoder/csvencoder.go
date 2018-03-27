@@ -1,7 +1,7 @@
-package jsonencoder
+package csvencoder
 
 import(
-	"encoding/json"
+	"encoding/csv"
 	"log"
 	"os"
 )
@@ -12,12 +12,23 @@ import(
 // basic of the msot basic implementation, needs work
 // this will create a file with filename in json format
 // with the info in a provided interface
-// needs better interface handling
-func EncodeSomeJSON (filename string, i interface{}){
+// needs better input handling
+func EncodeSomeCSV (filename string, i [][]string){
 	f, err := os.Create(filename)
-	defer f.Close()
 	PrintFatalError(err)
-	err = json.NewEncoder(f).Encode(&i)
+	defer f.Close()
+
+	w := csv.NewWriter(f)
+	PrintFatalError(err)
+
+	for _, q := range i {
+		if err := w.Write(q); err != nil{
+			log.Fatal(err)
+		}
+	}
+	w.Flush()
+
+	err = w.Error()
 	PrintFatalError(err)
 }
 

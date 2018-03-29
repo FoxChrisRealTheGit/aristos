@@ -28,5 +28,5 @@ func queryTestHandler(w http.ResponseWriter, r *http.Request){
 
 
 func sroot(w http.ResponseWriter, r *http.Request){
-	fmt.Fprint(w, "Welcome to theAristos website builder")
+	fmt.Fprint(w, "Welcome to the Aristos website builder")
 }

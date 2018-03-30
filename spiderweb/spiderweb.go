@@ -7,15 +7,15 @@ import(
 	ghandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 
-	"ARISTOS/middleware"
+	"ARISTOS/spiderweb/middleware"
 	"ARISTOS/spiderweb/handlers"
 )
 
 func Run(){
 	r := mux.NewRouter()
-	r.HandleFunc("/", handlers.HomeHandler)
+	r.HandleFunc("/signup", handlers.SignUpHandler).Methods("GET", "POST")
 
-	
+
 	//middleware stuffs
 	http.Handle("/", middleware.PanicRecoveryHandler(ghandlers.LoggingHandler(os.Stdout, r)))
 

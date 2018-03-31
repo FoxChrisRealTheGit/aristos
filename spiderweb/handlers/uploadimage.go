@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"image/png"
 	"io"
 	"log"
 	"net/http"
@@ -9,20 +8,25 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/nfnt/resize"
+	"ARISTOS/dblayer/common/asyncq"
+	"ARISTOS/dblayer/common/utility"
+	"ARISTOS/spiderweb/tasks"
 )
 
 type UploadImageForm struct {
+	PageTitle  string
 	FieldNames []string
 	Fields     map[string]string
 	Errors     map[string]string
 }
 
 func DisplayUploadImageForm(w http.ResponseWriter, r *http.Request, u *UploadImageForm) {
-	RenderTemplate(w, "./templates/uploadimageform.html", u)
+	RenderGatedTemplate(w, "./templates/uploadimageform.html", u)
 }
 
 func ProcessUploadImage(w http.ResponseWriter, r *http.Request, u *UploadImageForm) {
+
+	shouldProcessThumbnailAsynchronously := true
 
 	file, fileheader, err := r.FormFile("imagefile")
 
@@ -30,18 +34,15 @@ func ProcessUploadImage(w http.ResponseWriter, r *http.Request, u *UploadImageFo
 		log.Println("Encountered error when attempting to read uploaded file: ", err)
 	}
 
-	// Don't trust anyone!!!
-	randomFileName := GenerateUUID()
+	randomFileName := utility.GenerateUUID()
 
 	if fileheader != nil {
 
 		extension := filepath.Ext(fileheader.Filename)
-		// 32mb max upload
 		r.ParseMultipartForm(32 << 20)
 
 		defer file.Close()
 
-		// this needs to change to the correct folder path where the website will live
 		imageFilePathWithoutExtension := "./static/uploads/images/" + randomFileName
 		f, err := os.OpenFile(imageFilePathWithoutExtension+extension, os.O_WRONLY|os.O_CREATE, 0666)
 
@@ -53,36 +54,25 @@ func ProcessUploadImage(w http.ResponseWriter, r *http.Request, u *UploadImageFo
 		defer f.Close()
 		io.Copy(f, file)
 
-		thumbImageFilePath := imageFilePathWithoutExtension + "_thumb.png"
-		originalimagefile, err := os.Open(imageFilePathWithoutExtension + extension)
+		// Note: Moved the thumbnail generation logic (commented out code block below) to the
+		// ImageResizeTask object in the tasks package.
+		thumbnailResizeTask := tasks.NewImageResizeTask(imageFilePathWithoutExtension, extension)
 
-		if err != nil {
-			log.Println(err)
-			return
+		if shouldProcessThumbnailAsynchronously == true {
+
+			asyncq.TaskQueue <- thumbnailResizeTask
+
+		} else {
+
+			thumbnailResizeTask.Perform()
 		}
-
-		img, err := png.Decode(originalimagefile)
-
-		if err != nil {
-			log.Println("Encountered Error while decoding image file: ", err)
-		}
-
-		thumbImage := resize.Resize(270, 0, img, resize.Lanczos3)
-		thumbImageFile, err := os.Create(thumbImageFilePath)
-
-		if err != nil {
-			log.Println("Encountered error while resizing image:", err)
-		}
-
-		defer thumbImageFile.Close()
-
-		png.Encode(thumbImageFile, thumbImage)
 
 		m := make(map[string]string)
 		m["thumbnailPath"] = strings.TrimPrefix(imageFilePathWithoutExtension, ".") + "_thumb.png"
 		m["imagePath"] = strings.TrimPrefix(imageFilePathWithoutExtension, ".") + ".png"
+		m["PageTitle"] = "Image Preview"
 
-		RenderTemplate(w, "./templates/imagepreview.html", m)
+		RenderGatedTemplate(w, "./templates/imagepreview.html", m)
 
 	} else {
 		w.Write([]byte("Failed to process uploaded file!"))
@@ -100,6 +90,7 @@ func UploadImageHandler(w http.ResponseWriter, r *http.Request) {
 	u := UploadImageForm{}
 	u.Fields = make(map[string]string)
 	u.Errors = make(map[string]string)
+	u.PageTitle = "Upload Image"
 
 	switch r.Method {
 

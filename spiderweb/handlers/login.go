@@ -21,7 +21,7 @@ type LoginForm struct {
 // DisplayLoginForm displays the Sign Up form
 func DisplayLoginForm(w http.ResponseWriter, r *http.Request, l *LoginForm) {
 	fmt.Println("reached display login form")
-	RenderTemplate(w, "./templates/loginform.html", l)
+	RenderTemplate(w, "spiderweb/templates/loginform.html", l)
 }
 
 func PopulateLoginFormFields(r *http.Request, l *LoginForm) {
@@ -99,7 +99,7 @@ func ProcessLoginForm(w http.ResponseWriter, r *http.Request, l *LoginForm, e *c
 
 		}
 
-		http.Redirect(w, r, "/feed", 302)
+		http.Redirect(w, r, "/editor", 302)
 
 	} else {
 

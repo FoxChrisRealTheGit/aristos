@@ -12,6 +12,7 @@ import (
 )
 
 type UploadVideoForm struct {
+	PageTitle  string
 	FieldNames []string
 	Fields     map[string]string
 	Errors     map[string]string
@@ -79,6 +80,7 @@ func UploadVideoHandler(w http.ResponseWriter, r *http.Request) {
 	u := UploadVideoForm{}
 	u.Fields = make(map[string]string)
 	u.Errors = make(map[string]string)
+	u.PageTitle = "Upload Image"
 
 	switch r.Method {
 

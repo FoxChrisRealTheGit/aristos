@@ -1,11 +1,4 @@
-<html>
-<head>
-<title>Upload Image</title>
-<link rel="stylesheet" type="text/css" href="/static/css/pure.css" />
-<link rel="stylesheet" type="text/css" href="/static/css/gopherface.css" />
-</head>
-<body>
-<h1>Aristos - Upload Image</h1>
+{{template "header.html" .}}
 
 <div class="formContainer uploadFormContainer">
 <form enctype="multipart/form-data" action="/upload-image" method="post" class="pure-form pure-form-aligned">
@@ -22,5 +15,4 @@
 </form>
 </div>
 
-</body>
-</html>
+{{template "footer.html" .}}

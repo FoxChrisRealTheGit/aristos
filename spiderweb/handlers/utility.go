@@ -10,9 +10,18 @@ import(
 )
 
 // Template rendering function
-func RenderTemplate(w http.ResponseWriter, templateFile string, templateData interface{}){
-	t, err := template.ParseFiles(templateFile)
-	if err != nil{
+func RenderTemplate(w http.ResponseWriter, templateFile string, templateData interface{}) {
+	t, err := template.ParseFiles(templateFile, "spiderweb/templates/header.html", "spiderweb/templates/footer.html")
+	if err != nil {
+		log.Printf("Error encountered while parsing the template: ", err)
+	}
+	t.Execute(w, templateData)
+}
+
+
+func RenderGatedTemplate(w http.ResponseWriter, templateFile string, templateData interface{}) {
+	t, err := template.ParseFiles(templateFile, "./templates/gatedheader.html", "./templates/footer.html")
+	if err != nil {
 		log.Printf("Error encountered while parsing the template: ", err)
 	}
 	t.Execute(w, templateData)

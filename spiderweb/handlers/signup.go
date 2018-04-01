@@ -1,12 +1,16 @@
 package handlers
 
 import (
-	"ARISTOS/spiderweb/validationkit"
 	"ARISTOS/dblayer/common"
+	// "ARISTOS/models"
+	"ARISTOS/spiderweb/validationkit"
+	// "fmt"
+	// "log"
 	"net/http"
 )
 
 type SignUpForm struct {
+	PageTitle  string
 	FieldNames []string
 	Fields     map[string]string
 	Errors     map[string]string
@@ -28,7 +32,7 @@ func PopulateFormFields(r *http.Request, s *SignUpForm) {
 }
 
 // ValidateSignUpForm validates the Sign Up form's fields
-func ValidateSignUpForm(w http.ResponseWriter, r *http.Request, s *SignUpForm, e*common.Env) {
+func ValidateSignUpForm(w http.ResponseWriter, r *http.Request, s *SignUpForm, e *common.Env) {
 	PopulateFormFields(r, s)
 	//Check if username was filled out
 	if r.FormValue("username") == "" {
@@ -75,7 +79,7 @@ func ValidateSignUpForm(w http.ResponseWriter, r *http.Request, s *SignUpForm, e
 		emailErrorMessage := "The e-mail address entered has an improper syntax."
 		if _, ok := s.Errors["emailError"]; ok {
 			s.Errors["emailError"] += " " + emailErrorMessage
-		}else {
+		} else {
 			s.Errors["emailError"] = emailErrorMessage
 		}
 	}
@@ -94,31 +98,32 @@ func ValidateSignUpForm(w http.ResponseWriter, r *http.Request, s *SignUpForm, e
 
 // ProcessSignupForm
 func ProcessSignUpForm(w http.ResponseWriter, r *http.Request, s *SignUpForm, e *common.Env) {
-	//this indicates that there was a successful form submission	
+	//this indicates that there was a successful form submission
 	//this needs to hook up to the bolt db
-	u := models.NewUser(r.FormValue("username"), r.FormValue("firstname"), r.FormValue("lastName"), r.FormValue("email"), r.FormValue("password"))
-	err := e.DB.CreateUser(u)
-	if err != nil{
-		log.Print(err)
-	}
-	user, err := e.DB.GetUser("username")
-	if err != nil{
-		log.Print(err)
-	}else{
-		fmt.Printf("Fetch User Result: %+v\n", user)
-	}
+	// u := models.NewUser(r.FormValue("username"), r.FormValue("firstname"), r.FormValue("lastName"), r.FormValue("email"), r.FormValue("password"))
+	// err := e.DB.CreateUser(u)
+	// if err != nil {
+	// 	log.Print(err)
+	// }
+	// user, err := e.DB.GetUser("username")
+	// if err != nil {
+	// 	log.Print(err)
+	// } else {
+	// 	fmt.Printf("Fetch User Result: %+v\n", user)
+	// }
 	//Display form confirmation message
 	DisplayConfirmation(w, r, s)
 }
 
-func SignUpHandler(e *common.Env) http.Handler{
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request){
-		s:= SignUpForm{}
+func SignUpHandler(e *common.Env) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s := SignUpForm{}
 		s.FieldNames = []string{"username", "firstName", "lastName", "email"}
 		s.Fields = make(map[string]string)
 		s.Errors = make(map[string]string)
-	
-		switch r.Method{
+		s.PageTitle = "Sign Up"
+
+		switch r.Method {
 		case "GET":
 			DisplaySignUpForm(w, r, &s)
 		case "POST":
@@ -127,4 +132,4 @@ func SignUpHandler(e *common.Env) http.Handler{
 			DisplaySignUpForm(w, r, &s)
 		}
 	})
-	}
+}
